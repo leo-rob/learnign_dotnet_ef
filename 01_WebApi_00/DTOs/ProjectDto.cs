@@ -21,7 +21,7 @@ namespace Core.Dtos
         public DateTime? StartDate { get; init; }
         public DateTime? EndDate { get; init; }
 		
-		public static ProjectResponseDto From(Entities.Project project)
+		public static ProjectResponseDto From(Entities.Project? project)
 		{
 			if (project == null) return null!;
 			
