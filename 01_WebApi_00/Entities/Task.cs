@@ -19,13 +19,10 @@ namespace Core.Entities
 		[Column("due_date")]
 		public DateTime? DueDate { get; set; }
 		
-		[Column("project_id")]
-		public int ProjectId { get; set; }
-		public Project? Project { get; set; }
+		[Column("project_id")] public int ProjectId { get; set; }
+		[ForeignKey(nameof(ProjectId))] public Project? Project { get; set; }
 		
-		[Column("assigned_to_user_id")]
-		public int AssignedToUser { get; init; }
-		[ForeignKey(nameof(AssignedToUser))]
-		public User? User { get; init; }
+		[Column("assigned_to_user_id")] public int AssignedToUserId { get; init; }
+		[ForeignKey(nameof(AssignedToUserId))] public User? User { get; init; }
 	}
 }

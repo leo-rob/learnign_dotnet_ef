@@ -8,9 +8,9 @@ public sealed class UserServiceImpl(PMSContext context) : IUserService
 {
     private readonly PMSContext _context = context;
 	
-	public Task<UserResponseDto[]> GetUsersByIds(
+	public Task<UserResponseFullDto[]> GetUsersByIds(
 		int[] ids = null!,
-		bool includeRoles = false,
+		bool resolveRole = false,
 		bool includeProjects = false,
 		bool includeTasks = false
 	)
@@ -22,7 +22,7 @@ public sealed class UserServiceImpl(PMSContext context) : IUserService
 			baseQuery = baseQuery.Where(u => ids.Contains(u.Id));
 		}
 
-		if (includeRoles)
+		if (resolveRole)
 		{
 			baseQuery = baseQuery.Include(static u => u.Role);
 		}
@@ -37,28 +37,28 @@ public sealed class UserServiceImpl(PMSContext context) : IUserService
 			baseQuery = baseQuery.Include(static u => u.Tasks);
 		}
 
-		var dtoQuery = baseQuery.Select(static u => UserResponseDto.From(u));
+		var dtoQuery = baseQuery.Select(u => UserResponseFullDto.From(u));
 
 		return dtoQuery.ToArrayAsync();
 	}
 	
-	public Task<UserResponseDto[]> GetUsers(
-		bool includeRoles = false,
+	public Task<UserResponseFullDto[]> GetUsers(
+		bool resolveRole = false,
 		bool includeProjects = false,
 		bool includeTasks = false
 	)
 	{
 		return GetUsersByIds(
 			ids: null!,
-			includeRoles,
+			resolveRole,
 			includeProjects,
 			includeTasks
 		);
 	}
 
-	public async Task<UserResponseDto?> GetUserById(
+	public async Task<UserResponseFullDto?> GetUserById(
 		int id,
-		bool includeRoles,
+		bool resolveRole,
 		bool includeProjects,
 		bool includeTasks
 	)
@@ -71,7 +71,7 @@ public sealed class UserServiceImpl(PMSContext context) : IUserService
 		
 		var entry = _context.Entry(dbUser);
 		{
-			if (includeRoles)
+			if (resolveRole)
 			{
 				await entry.Reference(static u => u.Role).LoadAsync();
 			}
@@ -91,10 +91,10 @@ public sealed class UserServiceImpl(PMSContext context) : IUserService
 			}
 		}
 		
-		return UserResponseDto.From(dbUser);
+		return UserResponseFullDto.From(dbUser);
 	}
 	
-	public async Task<(bool, UserResponseDto?)> UpsertUser(
+	public async Task<(bool, UserResponseFullDto?)> UpsertUser(
 		UserRequestDto reqUser
 	)
 	{
@@ -136,7 +136,7 @@ public sealed class UserServiceImpl(PMSContext context) : IUserService
 		
 		await _context.SaveChangesAsync();
 		
-		return (isNewUser, UserResponseDto.From(user));
+		return (isNewUser, UserResponseFullDto.From(user));
 	}
 	
 	public async Task<bool> DeleteUser(int id)

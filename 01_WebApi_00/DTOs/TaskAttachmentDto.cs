@@ -1,25 +1,57 @@
 
+using System.Text.Json.Serialization;
+
 namespace Core.Dtos
 {
-	public record TaskAttachmentDto
+	public record TaskAttachmentRequestDto
 	{
-		public int Id { get; set; }
-		public string? FileName { get; set; }
-		public string? FileData { get; set; }
+		public int? Id { get; init; }
+		public required string FileData { get; init; }
+		public int TaskId { get; init; }
+		public string? FileName { get; init; }
+	}
+	
+	public record TaskAttachmentBaseResponseDto
+	{
+		public int Id { get; init; }
+		public string? FileName { get; init; }
+		[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+		public int? TaskId { get; init; }
 		
-		public TaskDto? Task { get; set; }
-		
-		
-		public static TaskAttachmentDto From(Entities.TaskAttachment attachment)
+		public static TaskAttachmentBaseResponseDto From(Entities.TaskAttachment? attachment)
 		{
 			if (attachment == null) return null!;
-
-			return new TaskAttachmentDto
+			
+			return new TaskAttachmentBaseResponseDto
+			{
+				Id = attachment.Id,
+				TaskId = attachment.TaskId,
+				FileName = attachment.FileName
+			};
+		}
+	}
+	
+	public sealed record TaskAttachmentResponseFullDto : TaskAttachmentBaseResponseDto
+	{
+		// [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+		public string? FileData { get; init; }
+		// [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+		public TaskResponseFullDto? Task { get; init; }
+		
+		
+		public static new TaskAttachmentResponseFullDto From(Entities.TaskAttachment? attachment)
+		{
+			if (attachment == null) return null!;
+			
+			return new TaskAttachmentResponseFullDto
 			{
 				Id = attachment.Id,
 				FileName = attachment.FileName,
+				
 				FileData = attachment.FileData,
-				Task = TaskDto.From(attachment.Task)
+				
+				TaskId = attachment.Task != null ? null : attachment.TaskId,
+				Task = TaskResponseFullDto.From(attachment.Task)
 			};
 		}
 	}

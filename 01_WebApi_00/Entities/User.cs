@@ -19,11 +19,9 @@ namespace Core.Entities
 		[Column("last_name")]
 		public string? LastName { get; set; }
 		
-		[Column("role_id"), Required]
-		public required int RoleId { get; set; }
+		[Column("role_id"), Required] public required int RoleId { get; set; }
 		
-		[ForeignKey(nameof(RoleId))]
-		public Role? Role { get; set; }
+		[ForeignKey(nameof(RoleId))] public Role? Role { get; set; }
 		
 		public List<Project>? Projects { get; set; }
 		public List<Task>? Tasks { get; set; }

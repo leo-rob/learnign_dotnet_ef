@@ -4,24 +4,27 @@ namespace Services;
 
 public interface IUserService
 {
-    public Task<UserResponseDto[]> GetUsersByIds(
+    public Task<UserResponseFullDto[]> GetUsersByIds(
 		int[] ids,
-		bool includeRoles = false,
+		bool resolveRole = false,
 		bool includeProjects = false,
-		bool includeTasks = false);
+		bool includeTasks = false
+	);
     
-	public Task<UserResponseDto[]> GetUsers(
-		bool includeRoles = false,
+	public Task<UserResponseFullDto[]> GetUsers(
+		bool resolveRole = false,
 		bool includeProjects = false,
-		bool includeTasks = false);	
-		
-	public Task<UserResponseDto?> GetUserById(
+		bool includeTasks = false
+	);
+	
+	public Task<UserResponseFullDto?> GetUserById(
 		int id,
-		bool includeRoles = false,
+		bool resolveRole = false,
 		bool includeProjects = false,
-		bool includeTasks = false);
+		bool includeTasks = false
+	);
 
-	public Task<(bool, UserResponseDto?)> UpsertUser(
+	public Task<(bool, UserResponseFullDto?)> UpsertUser(
 		UserRequestDto userDto);
 	
 	public Task<bool> DeleteUser(int id);

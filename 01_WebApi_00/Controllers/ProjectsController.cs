@@ -10,35 +10,38 @@ public sealed class ProjectsController(Services.IProjectsService projectService)
 	private readonly Services.IProjectsService _projectService = projectService;
 	
 	[HttpGet]
-	public Task<ProjectResponseDto[]> GetProjects(
-		[FromQuery] bool includeCategory = false)
+	public Task<ProjectResponseFullDto[]> GetProjects(
+		[FromQuery] bool resolveCategory = false,
+		[FromQuery] bool resolveManager = false)
 	{
-		return _projectService.GetProjects(includeCategory);
+		return _projectService.GetProjects(resolveCategory, resolveManager);
 	}
 	
 	[HttpGet("by-ids")]
-	public async Task<ActionResult<ProjectResponseDto[]>> GetProjectsByIds(
+	public async Task<ActionResult<ProjectResponseFullDto[]>> GetProjectsByIds(
 		[FromQuery] int[] ids,
-		[FromQuery] bool includeCategory = false)
+		[FromQuery] bool resolveCategory = false,
+		[FromQuery] bool resolveManager = false)
 	{
 		if (!ModelState.IsValid)
 		{
 			return BadRequest(ModelState);
 		}
 		
-		return await _projectService.GetProjectsByIds(ids, includeCategory);
+		return await _projectService.GetProjectsByIds(ids, resolveCategory, resolveManager);
 	}
-
+	
 	[HttpGet("{id}")]
 	public async Task<IActionResult> GetProject(int id,
-		[FromQuery] bool includeCategory = false)
+		[FromQuery] bool resolveCategory = false,
+		[FromQuery] bool resolveManager = false)
 	{
 		if (!ModelState.IsValid)
 		{
 			return BadRequest(ModelState);
 		}
 		
-		var projectDto = await _projectService.GetProjectById(id, includeCategory);
+		var projectDto = await _projectService.GetProjectById(id, resolveCategory, resolveManager);
 		return projectDto != null ? Ok(projectDto) : NotFound();
 	}
 	

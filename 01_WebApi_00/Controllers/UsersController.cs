@@ -11,18 +11,18 @@ public sealed class UsersController(Services.IUserService userService) : Control
 	
 	
 	[HttpGet]
-	public Task<UserResponseDto[]> GetUsers(
-		[FromQuery] bool includeRoles = false,
+	public Task<UserResponseFullDto[]> GetUsers(
+		[FromQuery] bool resolveRole = false,
 		[FromQuery] bool includeProjects = false,
 		[FromQuery] bool includeTasks = false)
 	{
-		return _userService.GetUsers(includeRoles, includeProjects, includeTasks);
+		return _userService.GetUsers(resolveRole, includeProjects, includeTasks);
 	}
 	
 	[HttpGet("by-ids")]
-	public async Task<ActionResult<UserResponseDto[]>> GetUsersByIds(
+	public async Task<ActionResult<UserResponseFullDto[]>> GetUsersByIds(
 		[FromQuery] int[] ids,
-		[FromQuery] bool includeRoles = false,
+		[FromQuery] bool resolveRole = false,
 		[FromQuery] bool includeProjects = false,
 		[FromQuery] bool includeTasks = false)
 	{
@@ -31,12 +31,12 @@ public sealed class UsersController(Services.IUserService userService) : Control
 			return BadRequest(ModelState);
 		}
 		
-		return await _userService.GetUsersByIds(ids, includeRoles, includeProjects, includeTasks);
+		return await _userService.GetUsersByIds(ids, resolveRole, includeProjects, includeTasks);
 	}
 	
 	[HttpGet("{id}")]
 	public async Task<IActionResult> GetUser(int id,
-		[FromQuery] bool includeRoles = false,
+		[FromQuery] bool resolveRole = false,
 		[FromQuery] bool includeProjects = false,
 		[FromQuery] bool includeTasks = false)
 	{
@@ -45,7 +45,7 @@ public sealed class UsersController(Services.IUserService userService) : Control
 			return BadRequest(ModelState);
 		}
 		
-		var userDto = await _userService.GetUserById(id, includeRoles, includeProjects, includeTasks);
+		var userDto = await _userService.GetUserById(id, resolveRole, includeProjects, includeTasks);
 		return userDto != null ? Ok(userDto) : NotFound();
 	}
 	

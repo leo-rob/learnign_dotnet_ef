@@ -12,22 +12,44 @@ namespace Core.Entities
 		[Column("name"), Required]
 		public required string Name { get; set; }
 		
-		[Column("category_id")]
-		public required int CategoryId { get; set; }
-		
-		[ForeignKey(nameof(CategoryId))]
-		public ProjectCategory? Category { get; set; }
-		
-		[Column("manager_id")]
-		public required int ManagerId { get; set; }
-		
-		[ForeignKey(nameof(ManagerId))]
-		public User? User { get; set; }
-		
-		
 		[Column("start_date")]
 		public DateTime? StartDate { get; set; }
 		[Column("end_date")]
 		public DateTime? EndDate { get; set; }
+		
+		[Column("category_id")] public required int CategoryId { get; set; }
+		
+		[ForeignKey(nameof(CategoryId))] public ProjectCategory? Category { get; set; }
+		
+		[Column("manager_id")] public required int ManagerId { get; set; }
+		
+		[ForeignKey(nameof(ManagerId))] public User? User { get; set; }
+		
+		
+		
+		
+		public static Project FromUpsert(Dtos.ProjectRequestDto upsrtProject, Project? existingProject = null)
+		{
+			if (existingProject != null)
+			{
+				existingProject.Name = upsrtProject.Name ?? existingProject.Name;
+				existingProject.CategoryId = upsrtProject.CategoryId ?? existingProject.CategoryId;
+				existingProject.ManagerId = upsrtProject.ManagerId ?? existingProject.ManagerId;
+				existingProject.StartDate = upsrtProject.StartDate ?? existingProject.StartDate;
+				existingProject.EndDate = upsrtProject.EndDate ?? existingProject.EndDate;
+				return existingProject;
+			}
+			else
+			{
+				return new Project
+				{
+					Name = upsrtProject.Name ?? string.Empty,
+					CategoryId = upsrtProject.CategoryId ?? -1,
+					ManagerId = upsrtProject.ManagerId ?? -1,
+					StartDate = upsrtProject.StartDate,
+					EndDate = upsrtProject.EndDate
+				};
+			}
+		}
 	}
 }

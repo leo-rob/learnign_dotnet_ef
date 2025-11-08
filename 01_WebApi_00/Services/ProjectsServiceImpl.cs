@@ -8,9 +8,10 @@ public class ProjectsServiceImpl(PMSContext context) : IProjectsService
 {
     private readonly PMSContext _context = context;
 	
-	public Task<ProjectResponseDto[]> GetProjectsByIds(
-		int[] ids,
-		bool includeCategory = false
+	public Task<ProjectResponseFullDto[]> GetProjectsByIds(
+		int[]? ids,
+		bool resolveCategory = false,
+		bool resolveManager = false
 	)
 	{
 		// Using AsSplitQuery to optimize performance when including related data
@@ -21,29 +22,35 @@ public class ProjectsServiceImpl(PMSContext context) : IProjectsService
 			baseQuery = baseQuery.Where(p => ids.Contains(p.Id));
 		}
 		
-		if (includeCategory)
+		if (resolveCategory)
 		{
 			baseQuery = baseQuery.Include(static p => p.Category);
 		}
 		
-		var dtoQuery = baseQuery.Select(static p => ProjectResponseDto.From(p));
-
-		return dtoQuery.ToArrayAsync();
+		if (resolveManager)
+		{
+			baseQuery = baseQuery.Include(static p => p.User);
+		}
+		
+		return baseQuery.Select(p => ProjectResponseFullDto.From(p)).ToArrayAsync();
 	}
 	
-	public Task<ProjectResponseDto[]> GetProjects(
-		bool includeCategory = false
+	public Task<ProjectResponseFullDto[]> GetProjects(
+		bool resolveCategory = false,
+		bool resolveManager = false
 	)
 	{
 		return GetProjectsByIds(
-			ids: null!,
-			includeCategory
+			ids: null,
+			resolveCategory,
+			resolveManager
 		);
 	}
 	
-	public async Task<ProjectResponseDto?> GetProjectById(
+	public async Task<ProjectResponseFullDto?> GetProjectById(
 		int id,
-		bool includeCategory
+		bool resolveCategory = false,
+		bool resolveManager = false
 	)
 	{
 		var dbProject = await _context.Projects.FindAsync(id);
@@ -54,16 +61,20 @@ public class ProjectsServiceImpl(PMSContext context) : IProjectsService
 		
 		var entry = _context.Entry(dbProject);
 		{
-			if (includeCategory)
+			if (resolveCategory)
 			{
 				await entry.Reference(static p => p.Category).LoadAsync();
 			}
+			if (resolveManager)
+			{
+				await entry.Reference(static p => p.User).LoadAsync();
+			}
 		}
 		
-		return ProjectResponseDto.From(dbProject);
+		return ProjectResponseFullDto.From(dbProject);
 	}
 	
-	public async Task<(bool, ProjectResponseDto?)> UpsertProject(
+	public async Task<(bool, ProjectResponseFullDto?)> UpsertProject(
 		ProjectRequestDto reqProject
 	)
 	{
@@ -76,35 +87,21 @@ public class ProjectsServiceImpl(PMSContext context) : IProjectsService
 			
 			if (project == null)
 			{
+				// Trying to update a project that does not exist
 				return (false, null);
 			}
 			
 			// Update existing project
-			project.Name = reqProject.Name ?? project.Name;
-			project.CategoryId = reqProject.CategoryId ?? project.CategoryId;
-			project.ManagerId = reqProject.ManagerId ?? project.ManagerId;
-			project.StartDate = reqProject.StartDate ?? project.StartDate;
-			project.EndDate = reqProject.EndDate ?? project.EndDate;
-
-			_context.Projects.Update(project);
+			_context.Projects.Update(Project.FromUpsert(reqProject, project));
 		}
 		else
 		{
 			isNewProject = true;
-			project = new Project
-			{
-				Name = reqProject.Name ?? string.Empty,
-				CategoryId = reqProject.CategoryId ?? -1,
-				ManagerId = reqProject.ManagerId ?? -1,
-				StartDate = reqProject.StartDate,
-				EndDate = reqProject.EndDate
-			};
-
-			await _context.Projects.AddAsync(project);
+			await _context.Projects.AddAsync(project = Project.FromUpsert(reqProject));
 		}
-
+		
 		await _context.SaveChangesAsync();
-		return (isNewProject, ProjectResponseDto.From(project));
+		return (isNewProject, ProjectResponseFullDto.From(project));
 	}
 	
 	public async Task<bool> DeleteProject(int id)

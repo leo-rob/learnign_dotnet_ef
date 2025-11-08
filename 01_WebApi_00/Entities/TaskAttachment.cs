@@ -14,9 +14,7 @@ namespace Core.Entities
 		[Column("file_data")]
 		public required string FileData { get; set; }
 		
-		[Column("task_id")]
-		public int TaskId { get; set; }
-		[ForeignKey(nameof(TaskId))]
-		public Task? Task { get; set; }
+		[Column("task_id")] public int TaskId { get; set; }
+		[ForeignKey(nameof(TaskId))] public Task? Task { get; set; }
 	}
 }

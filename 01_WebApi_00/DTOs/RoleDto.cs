@@ -6,7 +6,7 @@ namespace Core.Dtos
         public int Id { get; init; }
         public string? Name { get; init; }
 
-		internal static RoleDto From(Entities.Role role)
+		public static RoleDto From(Entities.Role? role)
 		{
 			if (role == null) return null!;
 			
