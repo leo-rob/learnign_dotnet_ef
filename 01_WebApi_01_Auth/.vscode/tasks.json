@@ -1,0 +1,14 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "build",
+			"command": "dotnet",
+			"args": [
+				"build",
+				"${workspaceFolder}/01_WebApi_01_Auth.csproj"
+			],
+			"problemMatcher": "$msCompile"
+		}
+	]
+}
